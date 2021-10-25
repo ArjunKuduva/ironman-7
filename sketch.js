@@ -6,9 +6,6 @@ function preload() {
   //preloading ironman image
   ironImage = loadImage("./images/iron.png")
 
-  //preloading restart screen image
-  restartImage = loadImage("./images/restart.png")
-
   //preloading diamond image and adding group for diamonds 
   diamondImage = loadImage("./images/diamond.png")
   diamondsGroup = new Group()
@@ -20,9 +17,14 @@ function preload() {
   //preloading stone image and adding group for stones
   stoneImage = loadImage("./images/stone.png")
   stonesGroup = new Group()
+
+  //preloading restart screen image
+  restartImage = loadImage("./images/restart.png")
 }
 
 function setup() {
+
+  gameState="PLAY"
 
   //creating a frame in which the game works
   createCanvas(1000, 600);
@@ -42,7 +44,7 @@ function setup() {
 
   //creating borders so that ironman dosen't go out of frame 
   platform = createSprite(200,650,1600,100)
-  platform.visible = true
+  platform.visible = false
   platform2 = createSprite(0,500,10,1000)
   platform2.visible = false
   platform3=createSprite(1000,100,10,1000)
@@ -52,9 +54,15 @@ function setup() {
 
   //initializing score to the game 
   score=0
+
+  restart=createSprite(500,300)
+  restart.addImage(restartImage)
+  restart.visible=false
 }
 
 function draw() {
+
+if(gameState=="PLAY"){
 
   //making the background scroll top to bottom infinitly 
   if(bg.y>500){
@@ -97,7 +105,7 @@ function draw() {
     var temp = diamondsGroup.get(x)
     if(iron.isTouching(temp)){
       temp.destroy()
-      score+=5
+      score+=1
     }
   }
 
@@ -107,22 +115,66 @@ function draw() {
   }
   //the score decreases when ironman hits spikes
   for(var x=0;x<spikesGroup.length;x++){
-    var temp = spikesGroup.get(x)
-    if(iron.isTouching(temp)){
-      temp.destroy()
-      score-=3
-    }
+      var temp = spikesGroup.get(x)
+      if(iron.isTouching(temp)){
+        temp.destroy()
+        score-=5
+      }
   }
 
   //adding gravity to the game 
   iron.velocityY+=0.3
+if(score<-9){
+  gameState="END"
+}  
+}
+else if(gameState==="END"){
+  bg.velocityY=0
+
+  restart.visible=true
+
+  iron.velocityY=0
+  iron.velocityX=0
+
+  stonesGroup.setVelocityYEach(0)
+  stonesGroup.setLifetimeEach(-1)
+
+  spikesGroup.setVelocityYEach(0)
+  spikesGroup.setLifetimeEach(-1)
+
+  diamondsGroup.setVelocityYEach(0)
+  diamondsGroup.setLifetimeEach(-1)
+
+  platform.y=620
+  platform2.y=620
+  platform3.y=620
+  platform4.y=620
+}
+
+if(mousePressedOver(restart)){
+  gameState="PLAY"
+  spikesGroup.destroyEach()
+  stonesGroup.destroyEach()
+  diamondsGroup.destroyEach()
+  iron.y=490
+  iron.scale=0.3
+  platform.y=650
+  platform2.y=500
+  platform3.y=100
+  platform4.y=0
+  restart.visible=false
+  bg.velocityY=8
+  score=0
+}
+
+console.log(gameState)
 
   //keeping ironman in the frame
   iron.collide(platform)
   iron.collide(platform2)
   iron.collide(platform3)
   iron.collide(platform4)
-  
+
   //adding all sprites to the game
   drawSprites();
 
